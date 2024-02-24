@@ -1,26 +1,42 @@
-import * as core from '@actions/core'
-import { wait } from './wait'
+import { $, fetch } from 'zx'
 
-/**
- * The main function for the action.
- * @returns {Promise<void>} Resolves when the action is complete.
- */
+async function curlDownload(path: string) {
+  await $`curl -L ${path} -o jq`
+  await $`chmod +x ./jq`
+  await $`./jq --version`
+}
+
+interface Recipe {
+  name: string
+  rating: string
+}
+
 export async function run(): Promise<void> {
-  try {
-    const ms: string = core.getInput('milliseconds')
+  await $`echo Hello World!`
 
-    // Debug logs are only output if the `ACTIONS_STEP_DEBUG` secret is true
-    core.debug(`Waiting ${ms} milliseconds ...`)
+  // wget the jq cli
+  await curlDownload(
+    'https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-macos-arm64'
+  )
 
-    // Log the current timestamp, wait, then log the new timestamp
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+  // call a fake api using fetch
+  let { recipes } = (await (
+    await fetch('https://dummyjson.com/recipes')
+  ).json()) as { recipes: Recipe[] }
 
-    // Set outputs for other workflow steps to use
-    core.setOutput('time', new Date().toTimeString())
-  } catch (error) {
-    // Fail the workflow run if an error occurs
-    if (error instanceof Error) core.setFailed(error.message)
-  }
+  recipes = recipes.map(({ name, rating }) => ({
+    name,
+    rating
+  }))
+
+  // get all title using jq
+  const out =
+    await $`echo ${JSON.stringify(recipes[0])} | ./jq '{name: .name, rating: .rating}'`
+
+  console.log(out)
+
+  // every 2 second give me a dish with its rating (colored)
+
+  // clean up  -- delete the jq cli
+  await $`rm ./jq`
 }
