@@ -5,3 +5,5 @@
 - dont ask why? i dont really know
 - i just wanted to try
 - ok dont judge me now
+- wanted to test out `zx` on a actions runners
+- couldnt find a use case to test it with

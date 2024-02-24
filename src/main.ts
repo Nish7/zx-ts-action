@@ -31,11 +31,7 @@ export async function run(): Promise<void> {
 
   // get all title using jq
   const out =
-    await $`echo ${JSON.stringify(recipes[0])} | ./jq '{name: .name, rating: .rating}'`
-
-  console.log(out)
-
-  // every 2 second give me a dish with its rating (colored)
+    await $`echo ${JSON.stringify(recipes)} | ./jq '.[] | {name: .name, rating: .rating}'`
 
   // clean up  -- delete the jq cli
   await $`rm ./jq`
